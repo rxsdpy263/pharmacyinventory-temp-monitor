@@ -1,0 +1,2 @@
+# pharmacyinventory-temp-monitor
+บันทึกอุณหภูมิคลังยา
