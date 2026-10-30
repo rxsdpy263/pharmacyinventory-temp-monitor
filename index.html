@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกอุณหภูมิและความชื้นคลังยา</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #0288d1; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #0288d1; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-size: 16px; width: 100%; }
+        button:hover { background: #02659e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 14px; }
+        th { background: #e1f5fe; color: #01579b; }
+        .alert { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>บันทึกอุณหภูมิและความชื้นคลังยา</h2>
+    
+    <div class="form-group">
+        <label>เลือกจุดวัด:</label>
+        <select id="location">
+            <option value="เครื่องวัดที่ 1 (คลังยาโซน A)">เครื่องวัดที่ 1 (คลังยาโซน A)</option>
+            <option value="เครื่องวัดที่ 2 (คลังยาโซน B)">เครื่องวัดที่ 2 (คลังยาโซน B)</option>
+            <option value="เครื่องวัดที่ 3 (คลังยาโซน C)">เครื่องวัดที่ 3 (คลังยาโซน C)</option>
+            <option value="เครื่องวัดที่ 4 (คลังยาโซน D)">เครื่องวัดที่ 4 (คลังยาโซน D)</option>
+            <option value="ตู้เย็นเก็บยาหลัก">ตู้เย็นเก็บยาหลัก</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>อุณหภูมิ (°C):</label>
+        <input type="number" id="temp" step="0.1" placeholder="เช่น 25.5 หรือ 4.2">
+    </div>
+
+    <div class="form-group" id="humidity-group">
+        <label>ความชื้น (%RH) (สำหรับคลังยา ไม่ต้องใส่ถ้าเป็นตู้เย็น):</label>
+        <input type="number" id="humidity" step="1" placeholder="เช่น 60">
+    </div>
+
+    <div class="form-group">
+        <label>ผู้บันทึก:</label>
+        <input type="text" id="recorder" placeholder="ชื่อผู้บันทึกข้อมูล">
+    </div>
+
+    <button onclick="saveData()">บันทึกข้อมูล</button>
+
+    <h3>ประวัติการบันทึก</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>วัน-เวลา</th>
+                <th>จุดวัด</th>
+                <th>อุณหภูมิ (°C)</th>
+                <th>ความชื้น (%RH)</th>
+                <th>ผู้บันทึก</th>
+            </tr>
+        </thead>
+        <tbody id="logTable">
+            <!-- ข้อมูลจะแสดงที่นี่ -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function loadData() {
+        let logs = JSON.parse(localStorage.getItem('pharmacyLogs')) || [];
+        let tableHTML = '';
+        logs.forEach(item => {
+            tableHTML += `<tr>
+                <td>${item.time}</td>
+                <td>${item.location}</td>
+                <td>${item.temp}</td>
+                <td>${item.humidity}</td>
+                <td>${item.recorder}</td>
+            </tr>`;
+        });
+        document.getElementById('logTable').innerHTML = tableHTML;
+    }
+
+    function saveData() {
+        let location = document.getElementById('location').value;
+        let temp = document.getElementById('temp').value;
+        let humidity = document.getElementById('humidity').value || '-';
+        let recorder = document.getElementById('recorder').value;
+
+        if(!temp || !recorder) {
+            alert('กรุณากรอกอุณหภูมิและชื่อผู้บันทึกให้ครบถ้วน');
+            return;
+        }
+
+        let now = new Date().toLocaleString('th-TH');
+        let newRecord = { time: now, location, temp, humidity, recorder };
+
+        let logs = JSON.parse(localStorage.getItem('pharmacyLogs')) || [];
+        logs.unshift(newRecord); // นำข้อมูลใหม่อยู่บนสุด
+        localStorage.setItem('pharmacyLogs', JSON.stringify(logs));
+
+        document.getElementById('temp').value = '';
+        document.getElementById('humidity').value = '';
+        document.getElementById('recorder').value = '';
+        
+        loadData();
+        alert('บันทึกข้อมูลสำเร็จ!');
+    }
+
+    window.onload = loadData;
+</script>
+
+</body>
+</html>
